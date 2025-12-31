@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Todo List</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Bootstrap -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://site-assets.fontawesome.com/releases/v6.6.0/css/all.css"
+    />
+
+    <!-- Google Font -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Poppins", sans-serif;
+        min-height: 100vh;
+        background: radial-gradient(circle at top, #1e293b, #020617);
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 50px 16px;
+        color: #e5e7eb;
+      }
+      .app {
+        width: 100%;
+        max-width: 900px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 22px;
+        padding: 30px;
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .app h1 {
+        font-weight: 700;
+        text-align: center;
+        margin-bottom: 25px;
+        background: linear-gradient(90deg, #38bdf8, #818cf8);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .controls {
+        display: grid;
+        grid-template-columns: 1fr 120px 1fr auto auto;
+        gap: 12px;
+        margin-bottom: 25px;
+      }
+      .controls input {
+        border-radius: 14px;
+        border: none;
+        padding: 14px 16px;
+        background: rgba(255, 255, 255, 0.12);
+        color: #fff;
+        outline: none;
+      }
+      .controls input::placeholder {
+        color: #cbd5f5;
+      }
+      .controls input:focus {
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.4);
+      }
+      .btn-main {
+        border-radius: 14px;
+        padding: 14px 18px;
+        border: none;
+        font-weight: 600;
+        background: linear-gradient(135deg, #6366f1, #4338ca);
+        color: #fff;
+        transition: 0.25s;
+      }
+      .btn-main:hover {
+        transform: translateY(-3px);
+      }
+      .btn-clear {
+        background: linear-gradient(135deg, #ef4444, #b91c1c);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 12px;
+      }
+      thead th {
+        color: #c7d2fe;
+        font-weight: 600;
+        padding: 10px;
+      }
+      tbody tr {
+        background: rgba(255, 255, 255, 0.08);
+        transition: 0.25s;
+      }
+      tbody tr:hover {
+        transform: scale(1.01);
+        background: rgba(255, 255, 255, 0.12);
+      }
+      tbody td,
+      tbody th {
+        padding: 16px;
+      }
+      tbody tr td:first-child,
+      tbody tr th:first-child {
+        border-radius: 14px 0 0 14px;
+      }
+      tbody tr td:last-child {
+        border-radius: 0 14px 14px 0;
+      }
+      .action-btn {
+        border: none;
+        padding: 10px 14px;
+        border-radius: 12px;
+        margin-right: 6px;
+        color: #fff;
+        transition: 0.25s;
+      }
+      .action-btn:hover {
+        transform: translateY(-2px);
+      }
+      .del {
+        background: #ef4444;
+      }
+      .edit {
+        background: #0ea5e9;
+      }
+      .view {
+        background: #6366f1;
+      }
+      .no-data {
+        text-align: center;
+        color: #f87171;
+        font-weight: 600;
+      }
+      @media (max-width: 768px) {
+        .controls {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* modal styles */
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.65);
+        -webkit-backdrop-filter: blur(6px);
+        backdrop-filter: blur(6px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: 0.3s ease;
+        z-index: 999;
+      }
+
+      .modal-overlay.active {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .custom-modal {
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 18px;
+        padding: 24px 28px;
+        width: 100%;
+        max-width: 500px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+        transform: scale(0.9);
+        transition: 0.3s ease;
+      }
+
+      .modal-overlay.active .custom-modal {
+        transform: scale(1);
+      }
+
+      .custom-modal h3 {
+        font-weight: 600;
+        margin-bottom: 16px;
+        background: linear-gradient(90deg, #38bdf8, #818cf8);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .custom-modal p {
+        margin-bottom: 10px;
+        color: #e5e7eb;
+      }
+
+      .modal-close {
+        margin-top: 20px;
+        width: 100%;
+        border: none;
+        padding: 12px;
+        border-radius: 12px;
+        font-weight: 600;
+        background: linear-gradient(135deg, #6366f1, #4338ca);
+        color: white;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="app">
+      <h1>Todo</h1>
+
+      <form id="form" class="controls">
+        <input type="text" id="username" placeholder="Task name" />
+        <input type="number" id="addPrice" placeholder="Price" />
+        <input type="search" id="searchItem" placeholder="Search tasks..." />
+        <button id="addUser" type="button" class="btn-main">Add</button>
+        <button id="clearBtn" type="button" class="btn-main btn-clear">
+          Clear
+        </button>
+      </form>
+
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="userdetails"></tbody>
+      </table>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+      <div class="custom-modal">
+        <h3>Task Details</h3>
+        <p><strong>Task:</strong> <span id="modalTaskName"></span></p>
+        <p><strong>Price:</strong> ₹<span id="modalTaskPrice"></span></p>
+
+        <button class="modal-close" onclick="closeModal()">Close</button>
+      </div>
+    </div>
+
+    <!-- custom js -->
+
+    <script>
+      const addUserBtn = document.getElementById("addUser");
+      const username = document.getElementById("username");
+      const addPrice = document.getElementById("addPrice");
+      const form = document.getElementById("form");
+      const displayData = document.getElementById("userdetails");
+      const clearBtn = document.getElementById("clearBtn");
+      const searchInputField = document.getElementById("searchItem");
+      let btnText = addUserBtn.innerText;
+      let userArray = [];
+      let edit_id = null;
+
+      document.addEventListener("DOMContentLoaded", displayInfo);
+
+      //call the data from localstorage and convert it into object and re assign it into userArray
+      let ObjStr = localStorage.getItem("users");
+      if (ObjStr != null) {
+        userArray = JSON.parse(ObjStr);
+      }
+      displayInfo();
+
+      //add button click event user input
+      addUserBtn.addEventListener("click", () => {
+        const name = username.value.trim();
+        const price = addPrice.value;
+        if (edit_id != null) {
+          //edit
+          userArray.splice(edit_id, 1, { name: name, price: price });
+          edit_id = null;
+        } else if (username.value && addPrice.value) {
+          //insert
+          userArray.push({ name: name, price: price });
+        }
+        addUserBtn.innerText = btnText;
+        if (form) form.reset();
+        saveInfo();
+        displayInfo();
+      });
+
+      //clear button
+      clearBtn.addEventListener("click", () => {
+        if (form) form.reset();
+        userArray = [];
+        localStorage.removeItem("users");
+        displayInfo();
+      });
+
+      //save data on localstorage
+      function saveInfo() {
+        const users = JSON.stringify(userArray);
+        localStorage.setItem("users", users);
+      }
+
+      //display data dynamically
+      function displayInfo() {
+        let statement = ``;
+        if (userArray.length != 0) {
+          userArray.map((user, index) => {
+            statement += `
+          <tr>
+            <th>${index + 1}</th>
+            <td>${user.name}</td>
+            <td>${user.price}</td>
+            <td>
+              <button id="deleteBtn" onclick="deleteInfo(${index})" type="button" class="btn btn-danger">
+                <i class="fa-solid fa-trash-can"></i>
+                </button>
+                <button id="editBtn" onclick="editInfo(${index})" type="button" class="btn btn-info">
+                  <i class="fa-regular fa-pen-to-square"></i>
+                  </button>
+                  <button type="button" class="btn btn-primary" onclick="modalView(${index})">
+                    <i class="fa-solid fa-eye"></i>
+                    </button>
+                    </td>
+                    </tr>`;
+            displayData.innerHTML = statement;
+          });
+        } else {
+          statement += `<tr>
+                    <th class=" text-center" style="color: red; font-weight: 700;" colspan=4>No data to show</th>
+                    </tr>`;
+          displayData.innerHTML = statement;
+        }
+      }
+
+      //delete button
+      function deleteInfo(index) {
+        userArray.splice(index, 1);
+        saveInfo(userArray);
+        displayInfo();
+      }
+
+      //edit userdata
+      function editInfo(id) {
+        edit_id = id;
+        username.value = userArray[id].name;
+        addPrice.value = userArray[id].price;
+        addUserBtn.innerText = "Save Changes";
+      }
+
+      //search feature
+      searchInputField.addEventListener("input", () => {
+        let value = searchInputField.value.toLowerCase().trim();
+        const searchedArr = userArray.filter((item) => {
+          if (item.name.toLowerCase().includes(value)) {
+            return item;
+          }
+        });
+        displaySearchInfo(searchedArr);
+      });
+
+      //display search item
+      function displaySearchInfo(arr) {
+        let statement = ``;
+        if (arr.length != 0) {
+          arr.map((user, index) => {
+            statement += `
+          <tr>
+            <th>${index + 1}</th>
+            <td>${user.name}</td>
+            <td>${user.price}</td>
+            <td>
+              <button id="deleteBtn" onclick="deleteInfo(${index})" type="button" class="btn btn-danger">
+                <i class="fa-solid fa-trash-can"></i>
+                </button>
+                <button id="editBtn" onclick="editInfo(${index})" type="button" class="btn btn-info">
+                  <i class="fa-regular fa-pen-to-square"></i>
+                  </button>
+                  <button type="button" class="btn btn-primary" onclick="modalView(${index})">
+                    <i class="fa-solid fa-eye"></i>
+                    </button>
+                    </td>
+                    </tr>`;
+            displayData.innerHTML = statement;
+          });
+        } else {
+          statement += `<tr>
+                    <th class=" text-center" style="color: red; font-weight: 700;" colspan=4>No data to show</th>
+                    </tr>`;
+          displayData.innerHTML = statement;
+        }
+      }
+
+      //modal view
+      const modal = document.getElementById("modalOverlay");
+      const modalTaskName = document.getElementById("modalTaskName");
+      const modalTaskPrice = document.getElementById("modalTaskPrice");
+
+      function modalView(index) {
+        modalTaskName.innerText = userArray[index].name;
+        modalTaskPrice.innerText = userArray[index].price;
+        modal.classList.add("active");
+      }
+
+      function closeModal() {
+        modal.classList.remove("active");
+      }
+
+      // close on backdrop click
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) {
+          closeModal();
+        }
+      });
+    </script>
+  </body>
+</html>
